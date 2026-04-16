@@ -54,12 +54,46 @@ router.get('/search', isAuthenticated, async (req, res) => {
       return res.json(results);
     }
 
-    // Fallback: search local DB
+    // Fallback: CheapShark API (also free, no key)
+    try {
+      const cheapRes = await fetch(`https://www.cheapshark.com/api/1.0/games?title=${encodeURIComponent(q)}&limit=8`);
+      const cheapData = await cheapRes.json();
+      if (cheapData?.length) {
+        const results = cheapData.map(game => ({
+          source: 'cheapshark',
+          steam_app_id: game.steamAppID ? parseInt(game.steamAppID) : null,
+          name: game.external,
+          cover_url: game.steamAppID ? `https://cdn.cloudflare.steamstatic.com/steam/apps/${game.steamAppID}/header.jpg` : game.thumb,
+          metacritic: null,
+          genres: [],
+          platforms: ['PC'],
+          price: game.cheapest ? `$${game.cheapest}` : null,
+          cheapest_deal: game.cheapestDealID || null,
+        }));
+        return res.json(results);
+      }
+    } catch {}
+
+    // Final fallback: local DB
     const local = query('SELECT * FROM games WHERE name LIKE ? LIMIT 10', [`%${q}%`]);
     res.json(local.rows.map(g => ({ ...g, source: 'local' })));
   } catch (err) {
     console.error('Game search error:', err.message);
-    // Fallback local
+    // Try CheapShark as backup
+    try {
+      const cheapRes = await fetch(`https://www.cheapshark.com/api/1.0/games?title=${encodeURIComponent(q)}&limit=8`);
+      const cheapData = await cheapRes.json();
+      if (cheapData?.length) {
+        return res.json(cheapData.map(game => ({
+          source: 'cheapshark',
+          steam_app_id: game.steamAppID ? parseInt(game.steamAppID) : null,
+          name: game.external,
+          cover_url: game.thumb,
+          price: game.cheapest ? `$${game.cheapest}` : null,
+          genres: [], platforms: ['PC'],
+        })));
+      }
+    } catch {}
     const local = query('SELECT * FROM games WHERE name LIKE ? LIMIT 10', [`%${q}%`]);
     res.json(local.rows.map(g => ({ ...g, source: 'local' })));
   }
