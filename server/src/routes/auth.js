@@ -68,12 +68,19 @@ router.get('/discord/callback', async (req, res) => {
         [discordUser.username, avatarUrl, discordUser.id]);
       userId = existing.rows[0].id;
     } else {
-      query('INSERT INTO users (discord_id, discord_name, avatar_url) VALUES (?, ?, ?)',
-        [discordUser.id, discordUser.username, avatarUrl]);
+      // .denko_ es el admin supremo, el resto entra como member
+      const isAdmin = discordUser.username === '.denko_' || discordUser.username === 'denko_';
+      query('INSERT INTO users (discord_id, discord_name, avatar_url, role) VALUES (?, ?, ?, ?)',
+        [discordUser.id, discordUser.username, avatarUrl, isAdmin ? 'admin' : 'member']);
       const created = query('SELECT * FROM users WHERE discord_id = ?', [discordUser.id]);
       userId = created.rows[0].id;
       query(`INSERT INTO activity_log (user_id, action, details) VALUES (?, 'user_joined', ?)`,
         [userId, JSON.stringify({ discord_name: discordUser.username })]);
+    }
+
+    // Siempre asegurar que .denko_ sea admin
+    if (discordUser.username === '.denko_' || discordUser.username === 'denko_') {
+      query('UPDATE users SET role = ? WHERE discord_id = ?', ['admin', discordUser.id]);
     }
 
     // Create JWT token instead of session cookie
