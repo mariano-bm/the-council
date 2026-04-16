@@ -16,6 +16,7 @@ import reviewsRoutes from './routes/reviews.js';
 import gamesRoutes from './routes/games.js';
 import leaderboardRoutes from './routes/leaderboard.js';
 import activityRoutes from './routes/activity.js';
+import adminRoutes from './routes/admin.js';
 
 dotenv.config();
 
@@ -74,6 +75,7 @@ app.use('/api/reviews', reviewsRoutes);
 app.use('/api/games', gamesRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/activity', activityRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
