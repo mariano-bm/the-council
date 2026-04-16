@@ -194,6 +194,29 @@ export async function initDatabase() {
     granted_by INTEGER, granted_at TEXT DEFAULT (datetime('now'))
   )`);
 
+  db.run(`CREATE TABLE IF NOT EXISTS activities (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    type TEXT NOT NULL DEFAULT 'game',
+    description TEXT,
+    cover_url TEXT,
+    status TEXT DEFAULT 'open',
+    points_join INTEGER DEFAULT 5,
+    points_skip INTEGER DEFAULT -3,
+    max_participants INTEGER,
+    created_by INTEGER REFERENCES users(id),
+    month_id INTEGER REFERENCES months(id),
+    created_at TEXT DEFAULT (datetime('now'))
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS activity_signups (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    activity_id INTEGER NOT NULL REFERENCES activities(id),
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    created_at TEXT DEFAULT (datetime('now')),
+    UNIQUE(activity_id, user_id)
+  )`);
+
   // Seed admin if empty
   const users = db.exec('SELECT COUNT(*) FROM users');
   if (users[0]?.values[0][0] === 0) {
