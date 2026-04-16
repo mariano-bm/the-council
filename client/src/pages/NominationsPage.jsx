@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import GlassCard from '../components/ui/GlassCard';
 import Avatar from '../components/ui/Avatar';
-import { Swords, Plus, X, Send, Sparkles, Gamepad2, Film, Users, Dices, Trophy, Check, UserPlus, UserMinus, Lock, Clock } from 'lucide-react';
+import { Swords, Plus, X, Send, Sparkles, Gamepad2, Film, Users, Dices, Trophy, Check, UserPlus, UserMinus, Lock, Clock, Search } from 'lucide-react';
 
 const ACTIVITY_TYPES = [
   { id: 'game', icon: Gamepad2, label: 'Juego del Mes', color: 'text-medieval-gold', bg: 'bg-medieval-gold/10' },
@@ -22,6 +22,30 @@ export default function NominationsPage() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ name: '', type: 'game', description: '', cover_url: '', points_join: 5, points_skip: -3, max_participants: '' });
   const [submitting, setSubmitting] = useState(false);
+  const [gameSearch, setGameSearch] = useState('');
+  const [gameResults, setGameResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+
+  async function searchGames() {
+    if (gameSearch.length < 2) return;
+    setSearching(true);
+    try {
+      const results = await api.get(`/games/search?q=${encodeURIComponent(gameSearch)}`);
+      setGameResults(results);
+    } catch { setGameResults([]); }
+    finally { setSearching(false); }
+  }
+
+  function selectGame(game) {
+    setForm(f => ({
+      ...f,
+      name: game.name,
+      cover_url: game.cover_url || '',
+      description: game.description || '',
+    }));
+    setGameResults([]);
+    setGameSearch('');
+  }
 
   const allActivities = activities || [];
   const openActivities = allActivities.filter(a => a.status === 'open');
@@ -116,8 +140,47 @@ export default function NominationsPage() {
                 })}
               </div>
 
+              {/* Steam search for game type */}
+              {form.type === 'game' && (
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <input value={gameSearch} onChange={e => setGameSearch(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && searchGames()}
+                      placeholder="Buscar juego en Steam..." className="input-field flex-1" />
+                    <button onClick={searchGames} disabled={searching || gameSearch.length < 2}
+                      className="btn-secondary disabled:opacity-30">
+                      <Search className="w-4 h-4" />
+                    </button>
+                  </div>
+                  {searching && <p className="text-xs text-white/30 text-center">Buscando en Steam...</p>}
+                  {gameResults.length > 0 && (
+                    <div className="max-h-64 overflow-y-auto space-y-1.5 rounded-xl bg-white/[0.02] p-2">
+                      {gameResults.map((game, i) => (
+                        <button key={`${game.steam_app_id}-${i}`} onClick={() => selectGame(game)}
+                          className="w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-white/[0.05] transition-colors text-left">
+                          {game.cover_url && <img src={game.cover_url} alt="" className="w-24 h-11 rounded-lg object-cover flex-shrink-0" />}
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-white/90 text-sm truncate">{game.name}</p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              {game.genres?.slice(0, 3).map(g => (
+                                <span key={g} className="text-[9px] text-medieval-gold/50">{g}</span>
+                              ))}
+                              {game.metacritic && <span className="text-[9px] text-medieval-forest-light/60">MC: {game.metacritic}</span>}
+                              {game.price && <span className="text-[9px] text-white/25">{game.price}</span>}
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  <div className="ornament-divider">
+                    <span className="text-[10px] text-white/15">o escribi el nombre manualmente</span>
+                  </div>
+                </div>
+              )}
+
               <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                placeholder="Nombre de la actividad..." className="input-field" />
+                placeholder={form.type === 'game' ? 'Nombre del juego...' : 'Nombre de la actividad...'} className="input-field" />
 
               <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                 placeholder="Descripcion (opcional)..." rows={2} className="input-field resize-none" />
