@@ -1,0 +1,233 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800;900&family=Cinzel+Decorative:wght@400;700;900&display=swap');
+
+@layer base {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(212, 168, 71, 0.25) transparent;
+  }
+  *::-webkit-scrollbar { width: 5px; }
+  *::-webkit-scrollbar-track { background: transparent; }
+  *::-webkit-scrollbar-thumb {
+    background: rgba(212, 168, 71, 0.25);
+    border-radius: 3px;
+  }
+  *::-webkit-scrollbar-thumb:hover { background: rgba(212, 168, 71, 0.4); }
+
+  body {
+    background: #0c0a0e;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(76, 29, 149, 0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(212, 168, 71, 0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 90%, rgba(139, 26, 26, 0.04) 0%, transparent 50%);
+    min-height: 100vh;
+  }
+
+  ::selection {
+    background: rgba(212, 168, 71, 0.3);
+    color: white;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-white/[0.03] backdrop-blur-md rounded-2xl;
+    border: 1px solid rgba(212, 168, 71, 0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .glass-card:hover {
+    @apply bg-white/[0.05] shadow-glass;
+    border-color: rgba(212, 168, 71, 0.18);
+    transform: translateY(-2px) scale(1.005);
+  }
+
+  .glass-panel {
+    @apply bg-white/[0.02] backdrop-blur-sm rounded-xl;
+    border: 1px solid rgba(212, 168, 71, 0.06);
+  }
+
+  .neon-text {
+    background: linear-gradient(135deg, #f0d078, #d4a847, #8b6f2e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 8px rgba(212, 168, 71, 0.3));
+  }
+
+  .medieval-text {
+    font-family: 'Cinzel', serif;
+  }
+
+  .medieval-display {
+    font-family: 'Cinzel Decorative', serif;
+  }
+
+  .shimmer-badge {
+    position: relative;
+    overflow: hidden;
+  }
+  .shimmer-badge::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(212, 168, 71, 0.2),
+      transparent
+    );
+    animation: shimmer 2.5s infinite;
+    background-size: 200% 100%;
+  }
+
+  .glow-border {
+    position: relative;
+  }
+  .glow-border::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, #d4a847, #7c3aed, #2d8a4e);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .glow-border:hover::before {
+    opacity: 1;
+  }
+
+  .stat-number {
+    @apply font-mono font-bold tabular-nums;
+  }
+
+  .phase-indicator {
+    @apply relative flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider;
+    font-family: 'Cinzel', serif;
+  }
+  .phase-indicator::before {
+    content: '';
+    @apply w-2 h-2 rounded-full animate-pulse;
+  }
+  .phase-nomination { @apply bg-medieval-gold/10 text-medieval-gold; }
+  .phase-nomination::before { @apply bg-medieval-gold; }
+  .phase-voting { @apply bg-medieval-royal-light/10 text-medieval-royal-light; }
+  .phase-voting::before { @apply bg-medieval-royal-light; }
+  .phase-playing { @apply bg-medieval-forest-light/10 text-medieval-forest-light; }
+  .phase-playing::before { @apply bg-medieval-forest-light; }
+  .phase-review { @apply bg-neon-amber/10 text-neon-amber; }
+  .phase-review::before { @apply bg-neon-amber; }
+  .phase-completed { @apply bg-white/10 text-white/60; }
+  .phase-completed::before { @apply bg-white/40; }
+
+  .btn-primary {
+    @apply relative px-6 py-2.5 rounded-xl font-semibold text-sm
+           hover:shadow-neon-gold transition-all duration-300
+           active:scale-95;
+    background: linear-gradient(135deg, #8b6f2e, #d4a847, #8b6f2e);
+    color: #0c0a0e;
+    font-family: 'Cinzel', serif;
+  }
+  .btn-secondary {
+    @apply px-6 py-2.5 rounded-xl font-semibold text-sm
+           bg-white/5 text-white/80
+           hover:bg-white/10 transition-all duration-300
+           active:scale-95;
+    border: 1px solid rgba(212, 168, 71, 0.15);
+    font-family: 'Cinzel', serif;
+  }
+  .btn-secondary:hover {
+    border-color: rgba(212, 168, 71, 0.3);
+  }
+
+  .btn-danger {
+    @apply px-6 py-2.5 rounded-xl font-semibold text-sm
+           bg-medieval-crimson/20 text-medieval-crimson-light
+           hover:bg-medieval-crimson/30 transition-all duration-300
+           active:scale-95;
+    border: 1px solid rgba(139, 26, 26, 0.3);
+    font-family: 'Cinzel', serif;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 rounded-xl bg-white/5
+           text-white placeholder-white/30 outline-none
+           focus:ring-1 focus:ring-medieval-gold/30
+           transition-all duration-200;
+    border: 1px solid rgba(212, 168, 71, 0.1);
+  }
+  .input-field:focus {
+    border-color: rgba(212, 168, 71, 0.3);
+  }
+
+  .score-badge {
+    @apply inline-flex items-center justify-center w-10 h-10 rounded-lg
+           font-mono font-bold text-sm;
+  }
+  .score-high { @apply bg-medieval-forest-light/20 text-medieval-forest-light; }
+  .score-mid { @apply bg-medieval-gold/20 text-medieval-gold; }
+  .score-low { @apply bg-medieval-crimson-light/20 text-medieval-crimson-light; }
+
+  /* Hoyo de la Vergüenza */
+  .shame-card {
+    @apply rounded-2xl p-5 relative overflow-hidden;
+    background: linear-gradient(135deg, rgba(92, 16, 16, 0.15), rgba(139, 26, 26, 0.08));
+    border: 1px solid rgba(139, 26, 26, 0.25);
+    box-shadow: 0 0 30px rgba(139, 26, 26, 0.1), inset 0 0 30px rgba(139, 26, 26, 0.05);
+  }
+  .shame-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(139, 26, 26, 0.08) 0%, transparent 70%);
+    animation: torch-flicker 3s ease-in-out infinite;
+  }
+
+  /* Ornamentos medievales */
+  .ornament-divider {
+    @apply flex items-center gap-3 my-6;
+  }
+  .ornament-divider::before,
+  .ornament-divider::after {
+    content: '';
+    @apply flex-1 h-px;
+    background: linear-gradient(to right, transparent, rgba(212, 168, 71, 0.2), transparent);
+  }
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 200%; }
+}
+
+@keyframes torch-flicker {
+  0%, 100% { opacity: 0.7; }
+  25% { opacity: 0.9; }
+  50% { opacity: 0.5; }
+  75% { opacity: 1; }
+}
+
+.rank-glow {
+  animation: rank-pulse 3s ease-in-out infinite;
+}
+@keyframes rank-pulse {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(212, 168, 71, 0.2)); }
+  50% { filter: drop-shadow(0 0 12px rgba(212, 168, 71, 0.5)); }
+}
+
+.latin-flicker {
+  animation: latin-glow 4s ease-in-out infinite;
+}
+@keyframes latin-glow {
+  0%, 100% { text-shadow: 0 0 4px rgba(212, 168, 71, 0.1); }
+  50% { text-shadow: 0 0 12px rgba(212, 168, 71, 0.4), 0 0 24px rgba(212, 168, 71, 0.15); }
+}
