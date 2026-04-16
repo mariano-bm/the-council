@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import jwt from 'jsonwebtoken';
 import { query } from '../config/database.js';
 
 const router = Router();
@@ -8,6 +9,7 @@ const CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
 const CALLBACK_URL = process.env.DISCORD_CALLBACK_URL || 'http://localhost:3001/api/auth/discord/callback';
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5174';
+const JWT_SECRET = process.env.SESSION_SECRET || 'the-council-secret-dev';
 
 // Step 1: Redirect to Discord
 router.get('/discord', (req, res) => {
@@ -20,7 +22,7 @@ router.get('/discord', (req, res) => {
   res.redirect(`https://discord.com/oauth2/authorize?${params}`);
 });
 
-// Step 2: Discord callback — exchange code for token, get user, create session
+// Step 2: Discord callback
 router.get('/discord/callback', async (req, res) => {
   const { code } = req.query;
   if (!code) return res.redirect(`${CLIENT_URL}?error=no_code`);
@@ -57,29 +59,28 @@ router.get('/discord/callback', async (req, res) => {
       ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png`
       : null;
 
-    // Check if user exists
+    // Upsert user
     const existing = query('SELECT * FROM users WHERE discord_id = ?', [discordUser.id]);
-
     let userId;
+
     if (existing.rows.length > 0) {
-      // Update name and avatar
       query('UPDATE users SET discord_name = ?, avatar_url = ?, last_active = datetime("now"), updated_at = datetime("now") WHERE discord_id = ?',
         [discordUser.username, avatarUrl, discordUser.id]);
       userId = existing.rows[0].id;
     } else {
-      // Create new user
       query('INSERT INTO users (discord_id, discord_name, avatar_url) VALUES (?, ?, ?)',
         [discordUser.id, discordUser.username, avatarUrl]);
       const created = query('SELECT * FROM users WHERE discord_id = ?', [discordUser.id]);
       userId = created.rows[0].id;
-
       query(`INSERT INTO activity_log (user_id, action, details) VALUES (?, 'user_joined', ?)`,
         [userId, JSON.stringify({ discord_name: discordUser.username })]);
     }
 
-    // Set session
-    req.session.userId = userId;
-    res.redirect(CLIENT_URL);
+    // Create JWT token instead of session cookie
+    const token = jwt.sign({ userId }, JWT_SECRET, { expiresIn: '7d' });
+
+    // Redirect to frontend with token
+    res.redirect(`${CLIENT_URL}?token=${token}`);
 
   } catch (err) {
     console.error('Discord auth error:', err);
@@ -87,18 +88,22 @@ router.get('/discord/callback', async (req, res) => {
   }
 });
 
-// Current user
+// Current user (via JWT in Authorization header)
 router.get('/me', (req, res) => {
-  if (req.session.userId) {
-    const result = query('SELECT * FROM users WHERE id = ?', [req.session.userId]);
+  const token = req.headers.authorization?.replace('Bearer ', '') || req.query.token;
+  if (!token) return res.json({ user: null });
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const result = query('SELECT * FROM users WHERE id = ?', [decoded.userId]);
     if (result.rows.length) return res.json({ user: result.rows[0] });
-  }
+  } catch {}
+
   res.json({ user: null });
 });
 
-// Logout
+// Logout (client-side just removes token)
 router.post('/logout', (req, res) => {
-  req.session.destroy();
   res.json({ message: 'Sesion cerrada' });
 });
 

@@ -1,12 +1,21 @@
 const API_URL = import.meta.env.VITE_API_URL || '';
 const BASE = `${API_URL}/api`;
 
+function getToken() {
+  return localStorage.getItem('council_token');
+}
+
+export function setToken(token) {
+  if (token) localStorage.setItem('council_token', token);
+  else localStorage.removeItem('council_token');
+}
+
 async function request(method, path, body = null) {
-  const opts = {
-    method,
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-  };
+  const headers = { 'Content-Type': 'application/json' };
+  const token = getToken();
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const opts = { method, headers };
   if (body) opts.body = JSON.stringify(body);
 
   const res = await fetch(`${BASE}${path}`, opts);
