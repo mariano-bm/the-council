@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext(null);
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 const DEMO_USER = {
   id: 1,
@@ -28,7 +29,7 @@ export function AuthProvider({ children }) {
     try {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 3000);
-      const res = await fetch('/api/auth/me', {
+      const res = await fetch(`${API_URL}/api/auth/me`, {
         credentials: 'include',
         signal: controller.signal,
       });
@@ -42,12 +43,10 @@ export function AuthProvider({ children }) {
         }
         setBackendOnline(true);
       } else {
-        // Backend respondió pero no estamos autenticados
         setBackendOnline(res.status !== 502 && res.status !== 504);
         setUser(null);
       }
     } catch (err) {
-      // Network error, timeout, o proxy error
       setUser(null);
       setBackendOnline(false);
     } finally {
@@ -60,7 +59,7 @@ export function AuthProvider({ children }) {
       setUser(DEMO_USER);
       return;
     }
-    window.location.href = '/api/auth/discord';
+    window.location.href = `${API_URL}/api/auth/discord`;
   }
 
   function loginDemo() {
@@ -73,7 +72,7 @@ export function AuthProvider({ children }) {
       return;
     }
     try {
-      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+      await fetch(`${API_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' });
     } catch { /* ignore */ }
     setUser(null);
   }

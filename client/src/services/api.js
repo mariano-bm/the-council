@@ -1,4 +1,5 @@
-const BASE = '/api';
+const API_URL = import.meta.env.VITE_API_URL || '';
+const BASE = `${API_URL}/api`;
 
 async function request(method, path, body = null) {
   const opts = {

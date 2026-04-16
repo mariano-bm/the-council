@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: the-council-api
+    runtime: node
+    buildCommand: npm install
+    startCommand: node src/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: DISCORD_CLIENT_ID
+        sync: false
+      - key: DISCORD_CLIENT_SECRET
+        sync: false
+      - key: CLIENT_URL
+        value: https://the-council-livid.vercel.app
+      - key: DISCORD_CALLBACK_URL
+        value: https://the-council-api.onrender.com/api/auth/discord/callback
