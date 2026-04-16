@@ -25,6 +25,7 @@ export default function NominationsPage() {
   const [gameSearch, setGameSearch] = useState('');
   const [gameResults, setGameResults] = useState([]);
   const [searching, setSearching] = useState(false);
+  const { data: deals } = useApi('/games/deals');
 
   async function searchGames() {
     if (gameSearch.length < 2) return;
@@ -173,6 +174,30 @@ export default function NominationsPage() {
                       ))}
                     </div>
                   )}
+                  {/* Sugerencias: deals actuales */}
+                  {!gameSearch && deals?.length > 0 && gameResults.length === 0 && (
+                    <div>
+                      <p className="text-[10px] text-medieval-gold/40 uppercase tracking-wider mb-2">Ofertas ahora en Steam</p>
+                      <div className="grid grid-cols-2 gap-1.5 max-h-52 overflow-y-auto">
+                        {deals.slice(0, 8).map((deal, i) => (
+                          <button key={i} onClick={() => selectGame({ name: deal.name, cover_url: deal.cover_url, steam_app_id: deal.steam_app_id })}
+                            className="flex items-center gap-2 p-2 rounded-lg hover:bg-white/[0.05] transition-colors text-left">
+                            {deal.cover_url && <img src={deal.cover_url} alt="" className="w-16 h-7 rounded object-cover flex-shrink-0" />}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[11px] text-white/80 truncate">{deal.name}</p>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[9px] text-medieval-forest-light font-mono">{deal.sale_price}</span>
+                                {deal.discount > 0 && <span className="text-[8px] text-medieval-crimson-light line-through">{deal.normal_price}</span>}
+                                {deal.discount > 0 && <span className="text-[8px] px-1 rounded bg-medieval-forest-light/15 text-medieval-forest-light">-{deal.discount}%</span>}
+                                {deal.metacritic && <span className="text-[8px] text-medieval-gold/40">MC:{deal.metacritic}</span>}
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="ornament-divider">
                     <span className="text-[10px] text-white/15">o escribi el nombre manualmente</span>
                   </div>
