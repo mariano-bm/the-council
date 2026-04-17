@@ -1,8 +1,8 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
-  LayoutDashboard, Gamepad2, Vote, Star, Trophy,
-  Calendar, History, LogOut, Shield, Skull, Settings, Swords, ScrollText, Gift
+  LayoutDashboard, Swords, Gamepad2, Trophy,
+  History, LogOut, Shield, Skull, Settings, ScrollText, Gift
 } from 'lucide-react';
 import clsx from 'clsx';
 import { getUserRank } from '../../utils/helpers';
@@ -10,12 +10,9 @@ import { getUserRank } from '../../utils/helpers';
 const NAV_ITEMS = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/actividades', label: 'Actividades', icon: Swords },
-  { path: '/calendario', label: 'Calendario', icon: Calendar },
-  { path: '/voting', label: 'Votacion', icon: Vote },
-  { path: '/reviews', label: 'Reviews', icon: Star },
+  { path: '/juegos', label: 'Juegos', icon: Gamepad2 },
   { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
-  { path: '/rangos', label: 'Codex de Rangos', icon: ScrollText },
-  { path: '/recompensas', label: 'Recompensas', icon: Gift },
+  { path: '/codex', label: 'Codex', icon: ScrollText },
   { path: '/hoyo', label: 'Hoyo de la Verguenza', icon: Skull },
   { path: '/history', label: 'Historial', icon: History },
 ];
@@ -60,7 +57,6 @@ export default function Sidebar() {
           </NavLink>
         ))}
 
-        {/* Admin link */}
         {user?.role === 'admin' && (
           <NavLink
             to="/admin"
