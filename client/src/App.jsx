@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import ActivitiesHub from './pages/ActivitiesHub';
 import GamesPage from './pages/GamesPage';
+import GameDetailPage from './pages/GameDetailPage';
 import VotingPage from './pages/VotingPage';
 import LeaderboardPage from './pages/LeaderboardPage';
 import CodexPage from './pages/CodexPage';
@@ -27,6 +28,7 @@ export default function App() {
         <Route path="/" element={<DashboardPage />} />
         <Route path="/actividades" element={<ActivitiesHub />} />
         <Route path="/juegos" element={<GamesPage />} />
+        <Route path="/juegos/:id" element={<GameDetailPage />} />
         <Route path="/voting" element={<VotingPage />} />
         <Route path="/leaderboard" element={<LeaderboardPage />} />
         <Route path="/codex" element={<CodexPage />} />
