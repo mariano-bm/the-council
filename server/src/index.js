@@ -87,6 +87,12 @@ app.get('/api/health', (req, res) => {
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
+  // Ensure CORS headers on error responses too
+  const origin = req.headers.origin;
+  if (origin && origin.endsWith('.vercel.app')) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
   res.status(err.status || 500).json({ error: err.message });
 });
 

@@ -6,31 +6,41 @@ const router = Router();
 
 // Get all council games with guide count
 router.get('/', isAuthenticated, async (req, res) => {
-  const games = await query(`
-    SELECT cg.*, u.discord_name as added_by_name,
-           (SELECT COUNT(*) FROM game_guides WHERE council_game_id = cg.id) as guide_count
-    FROM council_games cg
-    LEFT JOIN users u ON cg.added_by = u.id
-    ORDER BY cg.name
-  `);
-  res.json(games.rows);
+  try {
+    const games = await query(`
+      SELECT cg.*, u.discord_name as added_by_name,
+             (SELECT COUNT(*) FROM game_guides WHERE council_game_id = cg.id) as guide_count
+      FROM council_games cg
+      LEFT JOIN users u ON cg.added_by = u.id
+      ORDER BY cg.name
+    `);
+    res.json(games.rows);
+  } catch (err) {
+    console.error('council-games error:', err.message);
+    res.json([]);
+  }
 });
 
 // Get single game with all guides
 router.get('/:id', isAuthenticated, async (req, res) => {
-  const game = await query('SELECT * FROM council_games WHERE id = $1', [req.params.id]);
-  if (!game.rows.length) return res.status(404).json({ error: 'Juego no encontrado' });
+  try {
+    const game = await query('SELECT * FROM council_games WHERE id = $1', [req.params.id]);
+    if (!game.rows.length) return res.status(404).json({ error: 'Juego no encontrado' });
 
-  const guides = await query(`
-    SELECT gg.*, u.discord_name, u.avatar_url,
-           (SELECT COALESCE(SUM(vote), 0) FROM guide_votes WHERE guide_id = gg.id) as upvotes
-    FROM game_guides gg
-    JOIN users u ON gg.user_id = u.id
-    WHERE gg.council_game_id = $1
-    ORDER BY upvotes DESC, gg.created_at DESC
-  `, [req.params.id]);
+    const guides = await query(`
+      SELECT gg.*, u.discord_name, u.avatar_url,
+             (SELECT COALESCE(SUM(vote), 0) FROM guide_votes WHERE guide_id = gg.id) as upvotes
+      FROM game_guides gg
+      JOIN users u ON gg.user_id = u.id
+      WHERE gg.council_game_id = $1
+      ORDER BY upvotes DESC, gg.created_at DESC
+    `, [req.params.id]);
 
-  res.json({ ...game.rows[0], guides: guides.rows });
+    res.json({ ...game.rows[0], guides: guides.rows });
+  } catch (err) {
+    console.error('council-game detail error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Add a council game
