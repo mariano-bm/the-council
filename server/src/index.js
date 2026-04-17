@@ -18,6 +18,7 @@ import leaderboardRoutes from './routes/leaderboard.js';
 import activityRoutes from './routes/activity.js';
 import adminRoutes from './routes/admin.js';
 import activitiesRoutes from './routes/activities.js';
+import councilGamesRoutes from './routes/councilGames.js';
 
 dotenv.config();
 
@@ -78,6 +79,7 @@ app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/activity', activityRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/activities', activitiesRoutes);
+app.use('/api/council-games', councilGamesRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

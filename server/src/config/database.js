@@ -157,6 +157,37 @@ export async function initDatabase() {
         created_at TIMESTAMPTZ DEFAULT NOW()
       );
 
+      CREATE TABLE IF NOT EXISTS council_games (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        steam_app_id INTEGER,
+        cover_url TEXT,
+        genres TEXT DEFAULT '[]',
+        synopsis TEXT,
+        tryhard_info TEXT,
+        added_by INTEGER REFERENCES users(id),
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS game_guides (
+        id SERIAL PRIMARY KEY,
+        council_game_id INTEGER NOT NULL REFERENCES council_games(id) ON DELETE CASCADE,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        title TEXT NOT NULL,
+        content TEXT NOT NULL,
+        category TEXT DEFAULT 'general',
+        upvotes INTEGER DEFAULT 0,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS guide_votes (
+        id SERIAL PRIMARY KEY,
+        guide_id INTEGER NOT NULL REFERENCES game_guides(id) ON DELETE CASCADE,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        vote INTEGER DEFAULT 1,
+        UNIQUE(guide_id, user_id)
+      );
+
       CREATE TABLE IF NOT EXISTS activity_signups (
         id SERIAL PRIMARY KEY,
         activity_id INTEGER NOT NULL REFERENCES activities(id) ON DELETE CASCADE,
