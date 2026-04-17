@@ -23,7 +23,7 @@ router.get('/search', isAuthenticated, async (req, res) => {
   if (merged.length) return res.json(merged);
 
   // Fallback: local DB
-  const local = query('SELECT * FROM games WHERE name LIKE ? LIMIT 10', [`%${q}%`]);
+  const local = await query('SELECT * FROM games WHERE name ILIKE $1 LIMIT 10', [`%${q}%`]);
   res.json(local.rows.map(g => ({ ...g, source: 'local' })));
 });
 
@@ -105,23 +105,23 @@ async function searchCheapShark(q) {
   }));
 }
 
-router.post('/', isAuthenticated, (req, res) => {
+router.post('/', isAuthenticated, async (req, res) => {
   const { name, steam_app_id, cover_url, genres, platforms, metacritic, description, release_date } = req.body;
   if (!name) return res.status(400).json({ error: 'Nombre obligatorio' });
 
   if (steam_app_id) {
-    const existing = query('SELECT * FROM games WHERE steam_app_id = ?', [steam_app_id]);
+    const existing = await query('SELECT * FROM games WHERE steam_app_id = $1', [steam_app_id]);
     if (existing.rows.length) return res.json(existing.rows[0]);
   }
 
-  query('INSERT INTO games (name, steam_app_id, cover_url, genres, platforms, metacritic, description, release_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+  await query('INSERT INTO games (name, steam_app_id, cover_url, genres, platforms, metacritic, description, release_date) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
     [name, steam_app_id || null, cover_url || null, JSON.stringify(genres || []), JSON.stringify(platforms || []), metacritic || null, description || null, release_date || null]);
-  const created = query('SELECT * FROM games ORDER BY id DESC LIMIT 1');
+  const created = await query('SELECT * FROM games ORDER BY id DESC LIMIT 1');
   res.status(201).json(created.rows[0]);
 });
 
-router.get('/:id', isAuthenticated, (req, res) => {
-  const game = query('SELECT * FROM games WHERE id = ?', [req.params.id]);
+router.get('/:id', isAuthenticated, async (req, res) => {
+  const game = await query('SELECT * FROM games WHERE id = $1', [req.params.id]);
   if (!game.rows.length) return res.status(404).json({ error: 'Juego no encontrado' });
   res.json(game.rows[0]);
 });

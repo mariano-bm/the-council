@@ -60,27 +60,27 @@ router.get('/discord/callback', async (req, res) => {
       : null;
 
     // Upsert user
-    const existing = query('SELECT * FROM users WHERE discord_id = ?', [discordUser.id]);
+    const existing = await query('SELECT * FROM users WHERE discord_id = $1', [discordUser.id]);
     let userId;
 
     if (existing.rows.length > 0) {
-      query('UPDATE users SET discord_name = ?, avatar_url = ?, last_active = datetime("now"), updated_at = datetime("now") WHERE discord_id = ?',
+      await query('UPDATE users SET discord_name = $1, avatar_url = $2, last_active = NOW(), updated_at = NOW() WHERE discord_id = $3',
         [discordUser.username, avatarUrl, discordUser.id]);
       userId = existing.rows[0].id;
     } else {
       // .denko_ es el admin supremo, el resto entra como member
       const isAdmin = discordUser.username === '.denko_' || discordUser.username === 'denko_';
-      query('INSERT INTO users (discord_id, discord_name, avatar_url, role) VALUES (?, ?, ?, ?)',
+      await query('INSERT INTO users (discord_id, discord_name, avatar_url, role) VALUES ($1, $2, $3, $4)',
         [discordUser.id, discordUser.username, avatarUrl, isAdmin ? 'admin' : 'member']);
-      const created = query('SELECT * FROM users WHERE discord_id = ?', [discordUser.id]);
+      const created = await query('SELECT * FROM users WHERE discord_id = $1', [discordUser.id]);
       userId = created.rows[0].id;
-      query(`INSERT INTO activity_log (user_id, action, details) VALUES (?, 'user_joined', ?)`,
+      await query(`INSERT INTO activity_log (user_id, action, details) VALUES ($1, 'user_joined', $2)`,
         [userId, JSON.stringify({ discord_name: discordUser.username })]);
     }
 
     // Siempre asegurar que .denko_ sea admin
     if (discordUser.username === '.denko_' || discordUser.username === 'denko_') {
-      query('UPDATE users SET role = ? WHERE discord_id = ?', ['admin', discordUser.id]);
+      await query('UPDATE users SET role = $1 WHERE discord_id = $2', ['admin', discordUser.id]);
     }
 
     // Create JWT token instead of session cookie
@@ -96,13 +96,13 @@ router.get('/discord/callback', async (req, res) => {
 });
 
 // Current user (via JWT in Authorization header)
-router.get('/me', (req, res) => {
+router.get('/me', async (req, res) => {
   const token = req.headers.authorization?.replace('Bearer ', '') || req.query.token;
   if (!token) return res.json({ user: null });
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const result = query('SELECT * FROM users WHERE id = ?', [decoded.userId]);
+    const result = await query('SELECT * FROM users WHERE id = $1', [decoded.userId]);
     if (result.rows.length) return res.json({ user: result.rows[0] });
   } catch {}
 
