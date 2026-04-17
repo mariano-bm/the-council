@@ -350,7 +350,7 @@ export default function GameDetailPage() {
                           className="p-1.5 rounded-lg hover:bg-medieval-gold/10 text-white/20 hover:text-medieval-gold transition-all">
                           <ThumbsUp className="w-4 h-4" />
                         </button>
-                        <span className="font-mono text-sm font-bold text-medieval-gold/60">{guide.upvotes || 0}</span>
+                        <span className="font-mono text-sm font-bold text-medieval-gold/60">{guide.vote_score || guide.upvotes || 0}</span>
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-2 flex-wrap">

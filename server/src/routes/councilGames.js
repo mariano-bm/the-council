@@ -28,12 +28,13 @@ router.get('/:id', isAuthenticated, async (req, res) => {
     if (!game.rows.length) return res.status(404).json({ error: 'Juego no encontrado' });
 
     const guides = await query(`
-      SELECT gg.*, u.discord_name, u.avatar_url,
-             (SELECT COALESCE(SUM(vote), 0) FROM guide_votes WHERE guide_id = gg.id) as upvotes
+      SELECT gg.id, gg.council_game_id, gg.user_id, gg.title, gg.content, gg.category, gg.created_at,
+             u.discord_name, u.avatar_url,
+             (SELECT COALESCE(SUM(vote), 0) FROM guide_votes WHERE guide_id = gg.id) as vote_score
       FROM game_guides gg
       JOIN users u ON gg.user_id = u.id
       WHERE gg.council_game_id = $1
-      ORDER BY upvotes DESC, gg.created_at DESC
+      ORDER BY vote_score DESC, gg.created_at DESC
     `, [req.params.id]);
 
     res.json({ ...game.rows[0], guides: guides.rows });
