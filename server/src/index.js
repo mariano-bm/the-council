@@ -19,6 +19,7 @@ import activityRoutes from './routes/activity.js';
 import adminRoutes from './routes/admin.js';
 import activitiesRoutes from './routes/activities.js';
 import councilGamesRoutes from './routes/councilGames.js';
+import brawlhallaRoutes from './routes/brawlhalla.js';
 
 dotenv.config();
 
@@ -80,6 +81,7 @@ app.use('/api/activity', activityRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/activities', activitiesRoutes);
 app.use('/api/council-games', councilGamesRoutes);
+app.use('/api/brawlhalla', brawlhallaRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

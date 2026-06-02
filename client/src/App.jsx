@@ -13,6 +13,7 @@ import ProfilePage from './pages/ProfilePage';
 import HistoryPage from './pages/HistoryPage';
 import ShameHolePage from './pages/ShameHolePage';
 import AdminPage from './pages/AdminPage';
+import BrawlhallaControlPage from './pages/BrawlhallaControlPage';
 import LoadingScreen from './components/ui/LoadingScreen';
 
 export default function App() {
@@ -36,6 +37,7 @@ export default function App() {
         <Route path="/history" element={<HistoryPage />} />
         <Route path="/hoyo" element={<ShameHolePage />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/torneos" element={<BrawlhallaControlPage />} />
         {/* Redirects de rutas viejas */}
         <Route path="/rangos" element={<Navigate to="/codex" />} />
         <Route path="/recompensas" element={<Navigate to="/codex" />} />

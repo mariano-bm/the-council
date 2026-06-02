@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Brawlhalla Overlay</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body class="overlay-body">
+
+  <header class="top-bar" id="topBar">
+    <div class="top-bar__brand">
+      <span class="top-bar__tournament" id="tournamentName">BRAWLHALLA TOURNAMENT</span>
+    </div>
+    <div class="top-bar__round" id="roundLabel">GRAND FINAL · BO5</div>
+    <div class="top-bar__live">
+      <span class="live-dot"></span>
+      <span>LIVE</span>
+    </div>
+  </header>
+
+  <footer class="match-bar" id="matchBar" data-mode="1v1">
+
+    <section class="player player--p1">
+      <div class="player__top">
+        <span class="player__flag" id="p1FlagWrap">
+          <img class="player__flag-img" id="p1FlagImg" alt="" />
+          <span class="player__flag-label" id="p1Country">AR</span>
+        </span>
+        <span class="player__region" id="p1Region"></span>
+        <h1 class="player__name" id="p1Name">PLAYER 1</h1>
+      </div>
+      <div class="player__partner" id="p1bRow">
+        <span class="player__flag player__flag--mini">
+          <img class="player__flag-img" id="p1bFlagImg" alt="" />
+          <span class="player__flag-label" id="p1bCountry"></span>
+        </span>
+        <span class="player__partner-name" id="p1bName">PLAYER 1B</span>
+        <span class="player__partner-legend" id="p1bLegend"></span>
+      </div>
+      <div class="player__stats">
+        <div class="stat">
+          <span class="stat__label">LEGEND</span>
+          <span class="stat__value" id="p1Legend">—</span>
+        </div>
+        <div class="stat">
+          <span class="stat__label">TIER</span>
+          <span class="stat__value stat__value--tier" id="p1Tier">—</span>
+          <span class="stat__sub" id="p1Rating"></span>
+        </div>
+        <div class="stat">
+          <span class="stat__label">K/D</span>
+          <span class="stat__value" id="p1Kd">—</span>
+        </div>
+        <div class="stat">
+          <span class="stat__label">WIN %</span>
+          <span class="stat__value" id="p1Wr">—</span>
+          <span class="stat__sub" id="p1WrScope"></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="score">
+      <div class="score__pip-row" id="p1Pips"></div>
+      <div class="score__numbers">
+        <span class="score__num" id="p1Score">0</span>
+        <span class="score__sep">—</span>
+        <span class="score__num" id="p2Score">0</span>
+      </div>
+      <div class="score__pip-row" id="p2Pips"></div>
+      <div class="score__bo" id="boLabel">BEST OF 5</div>
+    </section>
+
+    <section class="player player--p2">
+      <div class="player__top">
+        <h1 class="player__name" id="p2Name">PLAYER 2</h1>
+        <span class="player__region" id="p2Region"></span>
+        <span class="player__flag" id="p2FlagWrap">
+          <img class="player__flag-img" id="p2FlagImg" alt="" />
+          <span class="player__flag-label" id="p2Country">AR</span>
+        </span>
+      </div>
+      <div class="player__partner" id="p2bRow">
+        <span class="player__partner-legend" id="p2bLegend"></span>
+        <span class="player__partner-name" id="p2bName">PLAYER 2B</span>
+        <span class="player__flag player__flag--mini">
+          <img class="player__flag-img" id="p2bFlagImg" alt="" />
+          <span class="player__flag-label" id="p2bCountry"></span>
+        </span>
+      </div>
+      <div class="player__stats">
+        <div class="stat">
+          <span class="stat__label">LEGEND</span>
+          <span class="stat__value" id="p2Legend">—</span>
+        </div>
+        <div class="stat">
+          <span class="stat__label">TIER</span>
+          <span class="stat__value stat__value--tier" id="p2Tier">—</span>
+          <span class="stat__sub" id="p2Rating"></span>
+        </div>
+        <div class="stat">
+          <span class="stat__label">K/D</span>
+          <span class="stat__value" id="p2Kd">—</span>
+        </div>
+        <div class="stat">
+          <span class="stat__label">WIN %</span>
+          <span class="stat__value" id="p2Wr">—</span>
+          <span class="stat__sub" id="p2WrScope"></span>
+        </div>
+      </div>
+    </section>
+
+  </footer>
+
+  <section class="postgame hidden" id="postgame">
+    <div class="postgame__card">
+      <header class="postgame__header">
+        <span class="postgame__kicker">ESTADÍSTICAS</span>
+        <span class="postgame__sub" id="postgameSub">stats con la legend en uso</span>
+      </header>
+
+      <section class="winprob">
+        <div class="winprob__title">PROBABILIDAD DE VICTORIA</div>
+        <div class="winprob__bar">
+          <div class="winprob__side winprob__side--p1" id="winprobP1">
+            <span class="winprob__name" id="winprobP1Name">P1</span>
+            <span class="winprob__pct" id="winprobP1Pct">50%</span>
+          </div>
+          <div class="winprob__side winprob__side--p2" id="winprobP2">
+            <span class="winprob__pct" id="winprobP2Pct">50%</span>
+            <span class="winprob__name" id="winprobP2Name">P2</span>
+          </div>
+        </div>
+        <div class="winprob__basis" id="winprobBasis">esperando ratings</div>
+      </section>
+
+      <div class="postgame__grid">
+
+        <div class="postgame__col postgame__col--p1">
+          <div class="postgame__player">
+            <span class="postgame__flag-wrap">
+              <img class="postgame__flag" id="pg1Flag" alt="" />
+              <span class="postgame__country" id="pg1Country"></span>
+            </span>
+            <h2 class="postgame__name" id="pg1Name">PLAYER 1</h2>
+            <span class="postgame__tier" id="pg1Tier"></span>
+          </div>
+
+          <div class="postgame__legend-banner">
+            <span class="postgame__legend-label">LEGEND</span>
+            <span class="postgame__legend-name" id="pg1Legend">—</span>
+            <span class="postgame__legend-meta" id="pg1LegendMeta"></span>
+          </div>
+
+          <div class="postgame__stats" id="pg1Stats"></div>
+
+          <div class="postgame__weapons">
+            <div class="postgame__weapons-title">ARMAS</div>
+            <div class="postgame__weapon" id="pg1Weapon1"></div>
+            <div class="postgame__weapon" id="pg1Weapon2"></div>
+          </div>
+
+          <div class="postgame__top">
+            <div class="postgame__top-title">TOP 3 LEYENDAS (más jugadas)</div>
+            <div class="postgame__top-list" id="pg1TopLegends"></div>
+          </div>
+        </div>
+
+        <div class="postgame__divider"></div>
+
+        <div class="postgame__col postgame__col--p2">
+          <div class="postgame__player">
+            <span class="postgame__flag-wrap">
+              <img class="postgame__flag" id="pg2Flag" alt="" />
+              <span class="postgame__country" id="pg2Country"></span>
+            </span>
+            <h2 class="postgame__name" id="pg2Name">PLAYER 2</h2>
+            <span class="postgame__tier" id="pg2Tier"></span>
+          </div>
+
+          <div class="postgame__legend-banner">
+            <span class="postgame__legend-label">LEGEND</span>
+            <span class="postgame__legend-name" id="pg2Legend">—</span>
+            <span class="postgame__legend-meta" id="pg2LegendMeta"></span>
+          </div>
+
+          <div class="postgame__stats" id="pg2Stats"></div>
+
+          <div class="postgame__weapons">
+            <div class="postgame__weapons-title">ARMAS</div>
+            <div class="postgame__weapon" id="pg2Weapon1"></div>
+            <div class="postgame__weapon" id="pg2Weapon2"></div>
+          </div>
+
+          <div class="postgame__top">
+            <div class="postgame__top-title">TOP 3 LEYENDAS (más jugadas)</div>
+            <div class="postgame__top-list" id="pg2TopLegends"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <script src="/app.js"></script>
+</body>
+</html>

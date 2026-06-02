@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
   LayoutDashboard, Swords, Gamepad2, Trophy,
-  History, LogOut, Shield, Skull, Settings, ScrollText, Gift
+  History, LogOut, Shield, Skull, Settings, ScrollText, Gift, Tv
 } from 'lucide-react';
 import clsx from 'clsx';
 import { getUserRank } from '../../utils/helpers';
@@ -58,18 +58,32 @@ export default function Sidebar() {
         ))}
 
         {user?.role === 'admin' && (
-          <NavLink
-            to="/admin"
-            className={({ isActive }) => clsx(
-              'flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 mt-2',
-              isActive
-                ? 'bg-medieval-royal-light/10 text-medieval-royal-light'
-                : 'text-medieval-royal-light/40 hover:text-medieval-royal-light/70 hover:bg-white/[0.03]'
-            )}
-          >
-            <Settings className="w-4 h-4" />
-            Admin Panel
-          </NavLink>
+          <>
+            <NavLink
+              to="/admin"
+              className={({ isActive }) => clsx(
+                'flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 mt-2',
+                isActive
+                  ? 'bg-medieval-royal-light/10 text-medieval-royal-light'
+                  : 'text-medieval-royal-light/40 hover:text-medieval-royal-light/70 hover:bg-white/[0.03]'
+              )}
+            >
+              <Settings className="w-4 h-4" />
+              Admin Panel
+            </NavLink>
+            <NavLink
+              to="/torneos"
+              className={({ isActive }) => clsx(
+                'flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200',
+                isActive
+                  ? 'bg-medieval-royal-light/10 text-medieval-royal-light'
+                  : 'text-medieval-royal-light/40 hover:text-medieval-royal-light/70 hover:bg-white/[0.03]'
+              )}
+            >
+              <Tv className="w-4 h-4" />
+              Torneos
+            </NavLink>
+          </>
         )}
       </nav>
 
