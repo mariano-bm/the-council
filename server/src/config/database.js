@@ -195,6 +195,77 @@ export async function initDatabase() {
         created_at TIMESTAMPTZ DEFAULT NOW(),
         UNIQUE(activity_id, user_id)
       );
+
+      CREATE TABLE IF NOT EXISTS roulette_games (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        cover_url TEXT,
+        steam_app_id INTEGER,
+        added_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS roulette_bets (
+        id SERIAL PRIMARY KEY,
+        roulette_game_id INTEGER NOT NULL REFERENCES roulette_games(id) ON DELETE CASCADE,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        points INTEGER NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS tournaments (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        description TEXT,
+        mode TEXT DEFAULT '1v1',
+        best_of INTEGER DEFAULT 3,
+        cover_url TEXT,
+        prize_1 TEXT, prize_2 TEXT, prize_3 TEXT,
+        status TEXT DEFAULT 'open',
+        champion_participant_id INTEGER,
+        created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS tournament_participants (
+        id SERIAL PRIMARY KEY,
+        tournament_id INTEGER NOT NULL REFERENCES tournaments(id) ON DELETE CASCADE,
+        user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        display_name TEXT NOT NULL,
+        brawlhalla_id INTEGER,
+        country_code TEXT DEFAULT 'ar',
+        avatar_url TEXT,
+        seed INTEGER,
+        eliminated BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS tournament_matches (
+        id SERIAL PRIMARY KEY,
+        tournament_id INTEGER NOT NULL REFERENCES tournaments(id) ON DELETE CASCADE,
+        round INTEGER NOT NULL,
+        position INTEGER NOT NULL,
+        p1_participant_id INTEGER,
+        p2_participant_id INTEGER,
+        p1_score INTEGER DEFAULT 0,
+        p2_score INTEGER DEFAULT 0,
+        winner_participant_id INTEGER,
+        next_match_id INTEGER,
+        next_slot INTEGER,
+        status TEXT DEFAULT 'pending',
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+
+      CREATE TABLE IF NOT EXISTS trophies (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        tournament_id INTEGER,
+        tournament_name TEXT,
+        placement INTEGER,
+        label TEXT,
+        emoji TEXT,
+        earned_at TIMESTAMPTZ DEFAULT NOW()
+      );
     `);
 
     // Seed admin if empty
