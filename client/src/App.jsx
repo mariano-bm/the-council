@@ -6,6 +6,7 @@ import DashboardPage from './pages/DashboardPage';
 import ActivitiesHub from './pages/ActivitiesHub';
 import GamesPage from './pages/GamesPage';
 import GameDetailPage from './pages/GameDetailPage';
+import RoulettePage from './pages/RoulettePage';
 import VotingPage from './pages/VotingPage';
 import LeaderboardPage from './pages/LeaderboardPage';
 import CodexPage from './pages/CodexPage';
@@ -14,6 +15,8 @@ import HistoryPage from './pages/HistoryPage';
 import ShameHolePage from './pages/ShameHolePage';
 import AdminPage from './pages/AdminPage';
 import BrawlhallaControlPage from './pages/BrawlhallaControlPage';
+import TournamentsPage from './pages/TournamentsPage';
+import TournamentDetailPage from './pages/TournamentDetailPage';
 import LoadingScreen from './components/ui/LoadingScreen';
 
 export default function App() {
@@ -30,6 +33,7 @@ export default function App() {
         <Route path="/actividades" element={<ActivitiesHub />} />
         <Route path="/juegos" element={<GamesPage />} />
         <Route path="/juegos/:id" element={<GameDetailPage />} />
+        <Route path="/ruleta" element={<RoulettePage />} />
         <Route path="/voting" element={<VotingPage />} />
         <Route path="/leaderboard" element={<LeaderboardPage />} />
         <Route path="/codex" element={<CodexPage />} />
@@ -37,7 +41,9 @@ export default function App() {
         <Route path="/history" element={<HistoryPage />} />
         <Route path="/hoyo" element={<ShameHolePage />} />
         <Route path="/admin" element={<AdminPage />} />
-        <Route path="/torneos" element={<BrawlhallaControlPage />} />
+        <Route path="/torneos" element={<TournamentsPage />} />
+        <Route path="/torneos/overlay" element={<BrawlhallaControlPage />} />
+        <Route path="/torneos/:id" element={<TournamentDetailPage />} />
         {/* Redirects de rutas viejas */}
         <Route path="/rangos" element={<Navigate to="/codex" />} />
         <Route path="/recompensas" element={<Navigate to="/codex" />} />

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApi } from '../hooks/useApi';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { api } from '../services/api';
 import GlassCard from '../components/ui/GlassCard';
 import Avatar from '../components/ui/Avatar';
@@ -27,6 +28,7 @@ const TAG_STYLES = {
 
 export default function NominationsPage() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const { data: activities, refetch } = useApi('/activities');
   const { data: deals } = useApi('/games/deals');
   const [showForm, setShowForm] = useState(false);
@@ -64,25 +66,26 @@ export default function NominationsPage() {
       setForm({ name: '', type: 'game', description: '', cover_url: '' });
       setShowForm(false);
       refetch();
-    } catch (err) { alert(err.message); }
+      toast.success('Actividad convocada', { title: 'Nova Actio' });
+    } catch (err) { toast.error(err.message); }
     finally { setSubmitting(false); }
   }
 
   async function joinActivity(id) {
-    try { const r = await api.post(`/activities/${id}/join`); alert(r.message); refetch(); }
-    catch (err) { alert(err.message); }
+    try { const r = await api.post(`/activities/${id}/join`); toast.success(r.message, { title: 'Te uniste' }); refetch(); }
+    catch (err) { toast.error(err.message); }
   }
   async function leaveActivity(id) {
-    try { const r = await api.post(`/activities/${id}/leave`); alert(r.message); refetch(); }
-    catch (err) { alert(err.message); }
+    try { const r = await api.post(`/activities/${id}/leave`); toast.warning(r.message); refetch(); }
+    catch (err) { toast.error(err.message); }
   }
   async function closeActivity(id) {
-    try { const r = await api.post(`/activities/${id}/close`); alert(r.message); refetch(); }
-    catch (err) { alert(err.message); }
+    try { const r = await api.post(`/activities/${id}/close`); toast.info(r.message, { title: 'Actividad cerrada' }); refetch(); }
+    catch (err) { toast.error(err.message); }
   }
   async function deleteActivity(id) {
-    try { await api.delete(`/activities/${id}`); refetch(); }
-    catch (err) { alert(err.message); }
+    try { await api.delete(`/activities/${id}`); toast.info('Actividad eliminada'); refetch(); }
+    catch (err) { toast.error(err.message); }
   }
 
   return (

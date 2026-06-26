@@ -8,47 +8,56 @@ import Badge from '../components/ui/Badge';
 import ScoreBadge from '../components/ui/ScoreBadge';
 import ProgressBar from '../components/ui/ProgressBar';
 import RankBadge from '../components/ui/RankBadge';
+import RankEntrance from '../components/ui/RankEntrance';
 import { User, Trophy, Target, Gamepad2, Star } from 'lucide-react';
-import { getObjectivityColor, getMonthName, formatDate } from '../utils/helpers';
+import { getObjectivityColor, getMonthName, formatDate, getUserRank } from '../utils/helpers';
 
 export default function ProfilePage() {
   const { id } = useParams();
   const { user: currentUser } = useAuth();
   const userId = id || currentUser?.id;
   const { data: profile, loading } = useApi(`/users/${userId}`);
+  const { data: trophies } = useApi(`/tournaments/trophies/user/${userId}`);
 
   if (loading || !profile) {
     return <div className="text-white/40 text-center py-20">Cargando perfil...</div>;
   }
 
   const objColor = getObjectivityColor(profile.objectivity_score);
+  const rank = getUserRank(profile.recommender_points || 0, profile.override_rank);
 
   return (
     <div className="space-y-6">
+      {/* Entrada épica temática según el rango */}
+      <RankEntrance points={profile.recommender_points || 0} overrideRank={profile.override_rank} userId={profile.id} />
+
       {/* Profile header */}
       <GlassCard className="relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-neon-violet/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3" />
+        <div className="absolute top-0 right-0 w-80 h-80 bg-medieval-gold/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3" />
         <div className="relative flex items-center gap-6">
           <Avatar src={profile.avatar_url} name={profile.discord_name} size="xl" ring />
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-1">
               <h1 className="text-2xl font-bold text-white">{profile.discord_name}</h1>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider bg-neon-violet/10 text-neon-violet font-semibold">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider bg-medieval-gold/10 text-medieval-gold font-semibold">
                 {profile.role === 'admin' ? 'Admin' : 'Council Member'}
               </span>
             </div>
-            <p className="text-sm text-white/30">
+            <p className="text-[11px] font-mono text-medieval-gold/40 uppercase tracking-[0.2em] mt-0.5">
+              {rank.emoji} {rank.title} · {rank.latin}
+            </p>
+            <p className="text-sm text-white/30 mt-1">
               Miembro desde {formatDate(profile.created_at)}
             </p>
           </div>
 
-          {/* Rango medieval */}
-          <RankBadge points={profile.recommender_points || 0} size="lg" showProgress />
+          {/* Rango medieval — ahora respeta el override del admin */}
+          <RankBadge points={profile.recommender_points || 0} overrideRank={profile.override_rank} size="lg" showProgress />
 
           {/* Stats */}
           <div className="flex gap-6">
             <div className="text-center">
-              <p className="font-mono text-2xl font-black text-neon-violet">{profile.recommender_points}</p>
+              <p className="font-mono text-2xl font-black text-medieval-gold">{profile.recommender_points}</p>
               <p className="text-[10px] text-white/30 uppercase tracking-wider">Puntos</p>
             </div>
             <div className="text-center">
@@ -58,7 +67,7 @@ export default function ProfilePage() {
               <p className="text-[10px] text-white/30 uppercase tracking-wider">Objetividad</p>
             </div>
             <div className="text-center">
-              <p className="font-mono text-2xl font-black text-neon-cyan">
+              <p className="font-mono text-2xl font-black text-medieval-royal-light">
                 {profile.badges?.length || 0}
               </p>
               <p className="text-[10px] text-white/30 uppercase tracking-wider">Badges</p>
@@ -66,6 +75,32 @@ export default function ProfilePage() {
           </div>
         </div>
       </GlassCard>
+
+      {/* Trofeos de torneos */}
+      {trophies?.length > 0 && (
+        <GlassCard className="relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-medieval-gold/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3" />
+          <h3 className="font-semibold text-white/80 mb-4 flex items-center gap-2 relative medieval-text">
+            <Trophy className="w-5 h-5 text-medieval-gold" />
+            Sala de Trofeos
+            <span className="text-[9px] font-mono text-medieval-gold/25 uppercase tracking-[0.15em]">ATRIUM TROPHAEORUM</span>
+          </h3>
+          <div className="relative flex flex-wrap gap-3">
+            {trophies.map(tr => (
+              <motion.div key={tr.id} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl border shimmer-badge ${
+                  tr.placement === 1 ? 'border-medieval-gold/40 bg-medieval-gold/8' : 'border-white/10 bg-white/[0.02]'
+                }`}>
+                <span className="text-3xl">{tr.emoji}</span>
+                <div>
+                  <p className="text-sm font-bold text-white/85">{tr.label}</p>
+                  <p className="text-[10px] text-white/40">{tr.tournament_name}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </GlassCard>
+      )}
 
       <div className="grid grid-cols-3 gap-6">
         {/* Badges */}

@@ -1,12 +1,14 @@
 import { useState, useCallback } from 'react';
 import { motion, Reorder } from 'framer-motion';
 import { useApi } from '../hooks/useApi';
+import { useToast } from '../context/ToastContext';
 import { api } from '../services/api';
 import GlassCard from '../components/ui/GlassCard';
 import Avatar from '../components/ui/Avatar';
 import { Vote, GripVertical, Check, Trophy } from 'lucide-react';
 
 export default function VotingPage() {
+  const { toast } = useToast();
   const { data, loading, refetch } = useApi('/voting/current');
   const [rankings, setRankings] = useState([]);
   const [submitting, setSubmitting] = useState(false);
@@ -40,8 +42,9 @@ export default function VotingPage() {
       await api.post('/voting', { rankings: orderedRankings });
       setSubmitted(true);
       refetch();
+      toast.success('Tu voto fue sellado en el Consejo', { title: 'Suffragium' });
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
     } finally {
       setSubmitting(false);
     }

@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import GlassCard from '../components/ui/GlassCard';
 import Avatar from '../components/ui/Avatar';
 import { api } from '../services/api';
@@ -10,7 +11,7 @@ import {
   Users, Shield, ExternalLink, Tv, Crown, ChevronUp, ChevronDown, Copy
 } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://the-council-production-1381.up.railway.app';
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 function PlayerCard({ slot, label, color, state, roster, legends, onChange }) {
   const player = state.players[slot] || {};
@@ -118,7 +119,7 @@ function PlayerCard({ slot, label, color, state, roster, legends, onChange }) {
   );
 }
 
-function RosterManager({ roster, onUpdate }) {
+function RosterManager({ roster, onUpdate, toast }) {
   const [name, setName] = useState('');
   const [bhId, setBhId] = useState('');
   const [flag, setFlag] = useState('ar');
@@ -135,7 +136,8 @@ function RosterManager({ roster, onUpdate }) {
       });
       setName(''); setBhId(''); setFlag('ar');
       onUpdate();
-    } catch (e) { alert(e.message); }
+      toast?.success('Combatiente inscripto', { title: 'Pugil' });
+    } catch (e) { toast?.error(e.message); }
     finally { setSubmitting(false); }
   }
 
@@ -198,6 +200,7 @@ function RosterManager({ roster, onUpdate }) {
 
 export default function BrawlhallaControlPage() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [state, setState] = useState(null);
   const [roster, setRoster] = useState(null);
   const [legends, setLegends] = useState([]);
@@ -250,21 +253,68 @@ export default function BrawlhallaControlPage() {
     } catch {}
   }
 
-  const updateState = useCallback(async (partial) => {
-    setSaving(true);
-    try {
-      const r = await fetch(`${API_URL}/api/brawlhalla/state`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('council_token')}` },
-        body: JSON.stringify(partial),
-      });
-      const newState = await r.json();
-      setState(newState);
-      setSavedNow(true);
-      setTimeout(() => setSavedNow(false), 1500);
-    } catch (e) { alert(e.message); }
-    finally { setSaving(false); }
+  // Optimistic update — apply locally first, then debounce server save
+  const pendingUpdate = useRef({});
+  const saveTimer = useRef(null);
+
+  const updateState = useCallback((partial) => {
+    // Optimistic update for instant UI feedback
+    setState(prev => {
+      if (!prev) return prev;
+      const next = { ...prev };
+      if (partial.tournament) next.tournament = { ...prev.tournament, ...partial.tournament };
+      if (partial.mode) next.mode = partial.mode;
+      if (typeof partial.match_visible === 'boolean') next.match_visible = partial.match_visible;
+      if (typeof partial.stats_visible === 'boolean') next.stats_visible = partial.stats_visible;
+      if (typeof partial.postgame_visible === 'boolean') next.postgame_visible = partial.postgame_visible;
+      if (partial.players) {
+        next.players = { ...prev.players };
+        for (const slot of ['p1', 'p1b', 'p2', 'p2b']) {
+          if (partial.players[slot]) {
+            next.players[slot] = { ...prev.players[slot], ...partial.players[slot] };
+          }
+        }
+      }
+      return next;
+    });
+
+    // Merge partial into pending
+    pendingUpdate.current = mergePartial(pendingUpdate.current, partial);
+
+    // Debounce server save
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(async () => {
+      const toSend = pendingUpdate.current;
+      pendingUpdate.current = {};
+      setSaving(true);
+      try {
+        await fetch(`${API_URL}/api/brawlhalla/state`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('council_token')}` },
+          body: JSON.stringify(toSend),
+        });
+        setSavedNow(true);
+        setTimeout(() => setSavedNow(false), 1500);
+      } catch (e) { console.error(e); }
+      finally { setSaving(false); }
+    }, 300);
   }, []);
+
+  function mergePartial(a, b) {
+    const out = { ...a };
+    if (b.tournament) out.tournament = { ...(a.tournament || {}), ...b.tournament };
+    if (b.mode) out.mode = b.mode;
+    if (typeof b.match_visible === 'boolean') out.match_visible = b.match_visible;
+    if (typeof b.stats_visible === 'boolean') out.stats_visible = b.stats_visible;
+    if (typeof b.postgame_visible === 'boolean') out.postgame_visible = b.postgame_visible;
+    if (b.players) {
+      out.players = { ...(a.players || {}) };
+      for (const slot of ['p1', 'p1b', 'p2', 'p2b']) {
+        if (b.players[slot]) out.players[slot] = { ...(a.players?.[slot] || {}), ...b.players[slot] };
+      }
+    }
+    return out;
+  }
 
   async function resetState() {
     if (!confirm('Reset al estado por defecto?')) return;
@@ -275,9 +325,15 @@ export default function BrawlhallaControlPage() {
     loadState();
   }
 
-  if (!state) {
+  if (!state || !state.tournament || !state.players) {
     return <div className="flex items-center justify-center py-20 text-white/30"><RefreshCw className="w-6 h-6 animate-spin" /></div>;
   }
+
+  // Ensure all player slots exist (defensive)
+  state.players.p1 = state.players.p1 || { score: 0, display_name: '', brawlhalla_id: 0, country_code: 'ar', country: 'ARG', legend: '' };
+  state.players.p1b = state.players.p1b || { score: 0, display_name: '', brawlhalla_id: 0, country_code: '', country: '', legend: '' };
+  state.players.p2 = state.players.p2 || { score: 0, display_name: '', brawlhalla_id: 0, country_code: 'ar', country: 'ARG', legend: '' };
+  state.players.p2b = state.players.p2b || { score: 0, display_name: '', brawlhalla_id: 0, country_code: '', country: '', legend: '' };
 
   const overlayUrl = `${window.location.origin}/overlay/brawlhalla/`;
 
@@ -403,7 +459,7 @@ export default function BrawlhallaControlPage() {
       </div>
 
       {/* Roster */}
-      <RosterManager roster={roster} onUpdate={loadRoster} />
+      <RosterManager roster={roster} onUpdate={loadRoster} toast={toast} />
 
       {/* Latin footer */}
       <div className="text-center py-4">

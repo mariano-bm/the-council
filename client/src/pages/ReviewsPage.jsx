@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useApi } from '../hooks/useApi';
+import { useToast } from '../context/ToastContext';
 import { api } from '../services/api';
 import GlassCard from '../components/ui/GlassCard';
 import ScoreBadge from '../components/ui/ScoreBadge';
@@ -18,6 +19,7 @@ const CATEGORIES = [
 ];
 
 export default function ReviewsPage() {
+  const { toast } = useToast();
   const { data, loading, refetch } = useApi('/reviews/current');
   const [scores, setScores] = useState({
     gameplay: 7, story: 7, graphics: 7, replayability: 7, group_fun: 7,
@@ -44,8 +46,9 @@ export default function ReviewsPage() {
         hours_played: hoursPlayed ? parseFloat(hoursPlayed) : null,
       });
       refetch();
+      toast.success('Tu veredicto fue registrado', { title: 'Iudicium' });
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
     } finally {
       setSubmitting(false);
     }
@@ -100,8 +103,8 @@ export default function ReviewsPage() {
                     className="w-full h-2 bg-white/5 rounded-full appearance-none cursor-pointer
                                [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4
                                [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full
-                               [&::-webkit-slider-thumb]:bg-neon-violet [&::-webkit-slider-thumb]:cursor-pointer
-                               [&::-webkit-slider-thumb]:shadow-neon-violet"
+                               [&::-webkit-slider-thumb]:bg-medieval-gold [&::-webkit-slider-thumb]:cursor-pointer
+                               [&::-webkit-slider-thumb]:shadow-neon-gold"
                   />
                 </div>
               ))}

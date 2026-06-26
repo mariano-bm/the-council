@@ -52,7 +52,7 @@ export default function LeaderboardPage() {
                           </div>
                         </div>
                         <h3 className="font-bold text-white/90">{p.discord_name}</h3>
-                        <RankBadge points={p.recommender_points || 0} size="sm" showProgress={false} />
+                        <RankBadge points={p.recommender_points || 0} overrideRank={p.override_rank} size="sm" showProgress={false} />
                         <p className="font-mono text-2xl font-black neon-text mt-1">{p.recommender_points}</p>
                         <p className="text-[10px] text-white/30 uppercase tracking-wider">puntos</p>
                       </GlassCard>
@@ -77,12 +77,12 @@ export default function LeaderboardPage() {
                     #{i + 4}
                   </span>
                   <Avatar src={p.avatar_url} name={p.discord_name} />
-                  <RankBadge points={p.recommender_points || 0} size="sm" showTitle={false} showLatin={false} showProgress={false} />
+                  <RankBadge points={p.recommender_points || 0} overrideRank={p.override_rank} size="sm" showTitle={false} showLatin={false} showProgress={false} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <p className="font-medium text-white/80">{p.discord_name}</p>
                       <span className="text-[9px] font-mono uppercase tracking-wider text-white/25">
-                        {getUserRank(p.recommender_points || 0).latin}
+                        {getUserRank(p.recommender_points || 0, p.override_rank).latin}
                       </span>
                     </div>
                     <ProgressBar

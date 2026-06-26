@@ -1,12 +1,14 @@
-import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useApi } from '../hooks/useApi';
 import { useAuth } from '../context/AuthContext';
 import GlassCard from '../components/ui/GlassCard';
 import PhaseIndicator from '../components/ui/PhaseIndicator';
 import Avatar from '../components/ui/Avatar';
 import Badge from '../components/ui/Badge';
+import WinnerReveal from '../components/ui/WinnerReveal';
 import { getMonthName, timeAgo, getScoreColor } from '../utils/helpers';
-import { Trophy, Gamepad2, Users, TrendingUp, Clock, ArrowRight } from 'lucide-react';
+import { Trophy, Gamepad2, Users, TrendingUp, Clock, ArrowRight, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function DashboardPage() {
@@ -19,8 +21,31 @@ export default function DashboardPage() {
   const recentWinners = months?.filter(m => m.winning_game_name).slice(0, 3) || [];
   const topPlayers = leaderboard?.slice(0, 5) || [];
 
+  // Reveal del ganador — auto la primera vez que hay ganador nuevo, después con botón
+  const [showReveal, setShowReveal] = useState(false);
+  const hasWinner = month?.winning_game_name && (month.phase === 'playing' || month.phase === 'completed');
+
+  useEffect(() => {
+    if (!hasWinner) return;
+    const seenKey = `council_winner_seen_${month.id}`;
+    if (!localStorage.getItem(seenKey)) {
+      const t = setTimeout(() => setShowReveal(true), 600);
+      localStorage.setItem(seenKey, '1');
+      return () => clearTimeout(t);
+    }
+  }, [hasWinner, month?.id]);
+
   return (
     <div className="space-y-8">
+      <AnimatePresence>
+        {showReveal && hasWinner && (
+          <WinnerReveal
+            game={{ name: month.winning_game_name, cover_url: month.winning_game_cover }}
+            nominator={month.nominator_name}
+            onClose={() => setShowReveal(false)}
+          />
+        )}
+      </AnimatePresence>
       {/* Welcome header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -35,7 +60,7 @@ export default function DashboardPage() {
       {/* Phase + current game */}
       {month && (
         <GlassCard className="relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-neon-violet/5 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2" />
+          <div className="absolute top-0 right-0 w-64 h-64 bg-medieval-gold/5 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2" />
           <div className="relative flex items-center justify-between">
             <div className="flex items-center gap-6">
               <div className="w-16 h-16 rounded-2xl bg-gradient-neon flex items-center justify-center">
@@ -61,17 +86,29 @@ export default function DashboardPage() {
                 </p>
               </div>
             </div>
-            <Link
-              to={
-                month.phase === 'nomination' ? '/nominations'
-                : month.phase === 'voting' ? '/voting'
-                : '/reviews'
-              }
-              className="btn-primary flex items-center gap-2"
-            >
-              {month.phase === 'nomination' ? 'Nominar' : month.phase === 'voting' ? 'Votar' : 'Reviewear'}
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+            <div className="flex items-center gap-2">
+              {hasWinner && (
+                <button
+                  onClick={() => setShowReveal(true)}
+                  className="btn-secondary flex items-center gap-2"
+                  title="Revelar Juego del Mes"
+                >
+                  <Sparkles className="w-4 h-4 text-medieval-gold" />
+                  Revelar
+                </button>
+              )}
+              <Link
+                to={
+                  month.phase === 'nomination' ? '/actividades'
+                  : month.phase === 'voting' ? '/voting'
+                  : '/actividades'
+                }
+                className="btn-primary flex items-center gap-2"
+              >
+                {month.phase === 'nomination' ? 'Nominar' : month.phase === 'voting' ? 'Votar' : 'Reviewear'}
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
         </GlassCard>
       )}

@@ -15,10 +15,13 @@ router.get('/search', isAuthenticated, async (req, res) => {
     searchCheapShark(q).catch(() => []),
   ]);
 
-  // Merge: Steam first, then CheapShark games not already in Steam results
+  // Merge: Steam primero. CheapShark solo si no está ya (por appid O por nombre).
   const steamIds = new Set(steamResults.map(g => g.steam_app_id).filter(Boolean));
-  const uniqueCheap = cheapResults.filter(g => !g.steam_app_id || !steamIds.has(g.steam_app_id));
-  const merged = [...steamResults, ...uniqueCheap].slice(0, 12);
+  const steamNames = new Set(steamResults.map(g => g.name.toLowerCase().trim()));
+  const uniqueCheap = cheapResults.filter(g =>
+    (!g.steam_app_id || !steamIds.has(g.steam_app_id)) && !steamNames.has((g.name || '').toLowerCase().trim())
+  );
+  const merged = [...steamResults, ...uniqueCheap].slice(0, 14);
 
   if (merged.length) return res.json(merged);
 
@@ -49,40 +52,26 @@ router.get('/deals', isAuthenticated, async (req, res) => {
 });
 
 async function searchSteam(q) {
+  // Solo storesearch: 1 request, rápido y robusto. Géneros/descripción se traen
+  // lazy en el detalle del juego (appdetails por cada item rate-limitea y rompe la búsqueda).
   const steamRes = await fetch(
     `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(q)}&l=spanish&cc=AR`
   );
   const steamData = await steamRes.json();
   if (!steamData.items?.length) return [];
 
-  return Promise.all(
-    steamData.items.slice(0, 6).map(async (item) => {
-      let genres = [], description = '';
-      try {
-        const detailRes = await fetch(
-          `https://store.steampowered.com/api/appdetails?appids=${item.id}&l=spanish&cc=AR`
-        );
-        const detailData = await detailRes.json();
-        const detail = detailData[item.id]?.data;
-        if (detail) {
-          genres = detail.genres?.map(g => g.description) || [];
-          description = detail.short_description || '';
-        }
-      } catch {}
-
-      return {
-        source: 'steam',
-        steam_app_id: item.id,
-        name: item.name,
-        cover_url: `https://cdn.cloudflare.steamstatic.com/steam/apps/${item.id}/header.jpg`,
-        metacritic: item.metascore || null,
-        genres,
-        platforms: [item.platforms?.windows && 'PC', item.platforms?.mac && 'Mac', item.platforms?.linux && 'Linux'].filter(Boolean),
-        price: item.price?.final ? `$${(item.price.final / 100).toFixed(2)}` : 'Free to Play',
-        description,
-      };
-    })
-  );
+  return steamData.items.slice(0, 12).map(item => ({
+    source: 'steam',
+    steam_app_id: item.id,
+    // tiny_image es la URL que Steam realmente sirve (existe siempre, incluso juegos nuevos).
+    // Construir header.jpg por appid da 404 en muchos juegos nuevos (ej PEAK).
+    cover_url: item.tiny_image || `https://cdn.cloudflare.steamstatic.com/steam/apps/${item.id}/header.jpg`,
+    name: item.name,
+    metacritic: item.metascore || null,
+    genres: [],
+    platforms: [item.platforms?.windows && 'PC', item.platforms?.mac && 'Mac', item.platforms?.linux && 'Linux'].filter(Boolean),
+    price: item.price?.final ? `$${(item.price.final / 100).toFixed(2)}` : (item.price ? null : 'Free to Play'),
+  }));
 }
 
 async function searchCheapShark(q) {
@@ -94,9 +83,7 @@ async function searchCheapShark(q) {
     source: 'cheapshark',
     steam_app_id: game.steamAppID ? parseInt(game.steamAppID) : null,
     name: game.external,
-    cover_url: game.steamAppID
-      ? `https://cdn.cloudflare.steamstatic.com/steam/apps/${game.steamAppID}/header.jpg`
-      : game.thumb,
+    cover_url: game.thumb, // thumb de CheapShark existe siempre (no construir header.jpg)
     metacritic: null,
     genres: [],
     platforms: ['PC'],

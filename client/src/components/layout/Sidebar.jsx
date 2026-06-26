@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
-  LayoutDashboard, Swords, Gamepad2, Trophy,
+  LayoutDashboard, Swords, Gamepad2, Trophy, Crown, Dices,
   History, LogOut, Shield, Skull, Settings, ScrollText, Gift, Tv
 } from 'lucide-react';
 import clsx from 'clsx';
@@ -11,7 +11,9 @@ const NAV_ITEMS = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/actividades', label: 'Actividades', icon: Swords },
   { path: '/juegos', label: 'Juegos', icon: Gamepad2 },
-  { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
+  { path: '/ruleta', label: 'Ruleta', icon: Dices },
+  { path: '/torneos', label: 'Torneos', icon: Trophy },
+  { path: '/leaderboard', label: 'Leaderboard', icon: Crown },
   { path: '/codex', label: 'Codex', icon: ScrollText },
   { path: '/hoyo', label: 'Hoyo de la Verguenza', icon: Skull },
   { path: '/history', label: 'Historial', icon: History },
@@ -72,7 +74,7 @@ export default function Sidebar() {
               Admin Panel
             </NavLink>
             <NavLink
-              to="/torneos"
+              to="/torneos/overlay"
               className={({ isActive }) => clsx(
                 'flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200',
                 isActive
@@ -81,7 +83,7 @@ export default function Sidebar() {
               )}
             >
               <Tv className="w-4 h-4" />
-              Torneos
+              Overlay OBS
             </NavLink>
           </>
         )}
